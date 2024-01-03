@@ -15,7 +15,7 @@ function parseWheel(data) {
     wheel.name = label_regExp.exec(data['args'][0]["value"])[1].trim();
     wheel.param = wheel.name.toLowerCase();
     wheel.value = value_regExp.exec(data['args'][0]["value"])[1];
-    assignWheelLabel();
+    //assignWheelLabel();
     assignWheelValue();
     assignWheelButtonsValue();
     assignWheelKeyLabel();
