@@ -6,20 +6,17 @@ var wheel = {
   "param": "-"
 }
 
-function parseWheel(data) {
-  var items = data['address'].split("/");
+function parseWheel(data, id) {
   var label_regExp = /([^)]+)\[/;
   var value_regExp = /\[([^)]+)\]/;
-  if (items[3]=="active" && items[4]=="wheel") {
-    wheel.id = items[5];
-    wheel.name = label_regExp.exec(data['args'][0]["value"])[1].trim();
-    wheel.param = wheel.name.toLowerCase();
-    wheel.value = value_regExp.exec(data['args'][0]["value"])[1];
-    //assignWheelLabel();
-    assignWheelValue();
-    assignWheelButtonsValue();
-    assignWheelKeyLabel();
-  }
+  wheel.id = id;
+  wheel.name = label_regExp.exec(data['args'][0]["value"])[1].trim();
+  wheel.param = wheel.name.toLowerCase();
+  wheel.value = value_regExp.exec(data['args'][0]["value"])[1];
+  //assignWheelLabel();
+  assignWheelValue();
+  assignWheelButtonsValue();
+  assignWheelKeyLabel();
 }
 
 function assignWheelKeyLabel() {
@@ -60,28 +57,34 @@ function assignWheelButtonsValue() {
 }
 
 function parseCmdLine(data) {
-  if (data['address'] == "/eos/out/cmd") {
-    var color = "#ffff00";
-    switch(data['args'][0]["value"].split(":")[0].trim()) {
-      case "BLIND":
-        color = "#0092ff";
-        break;
-      default:
-        color = "#ffff00";
-    }
-    receive('/EDIT', 'command_line_1', {
-      colorText: color,
-      value: data['args'][0]["value"],
-      widgets: []
-    });
+  var color = "#ffff00";
+  switch(data['args'][0]["value"].split(":")[0].trim()) {
+    case "BLIND":
+      color = "#0092ff";
+      break;
+    default:
+      color = "#ffff00";
   }
+  receive('/EDIT', 'command_line_1', {
+    colorText: color,
+    value: data['args'][0]["value"],
+    widgets: []
+  });
 }
 
 module.exports = {
   oscInFilter: (data)=>{
     if (DEBUG) console.log("in data : "+ JSON.stringify(data, null, 2));
-    parseCmdLine(data);
-    parseWheel(data);
+    var {address, args, host, port, clientId} = data;
+    if (address == "/eos/out/cmd") {
+      parseCmdLine(data);
+      //return;
+    }
+    var items = address.split("/");
+    if (items[3]=="active" && items[4]=="wheel") {
+      parseWheel(data, items[5]);
+      //return;
+    }
     return data;
   },
 }
